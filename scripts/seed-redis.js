@@ -9,18 +9,17 @@ var fs = require("fs");
 var path = require('path');
 var CSVConverter = require("csvtojson").Converter;
 
+var NodeGeocoder = require('node-geocoder');
+
 var redisDb = 7;
 var port = 6379;
+
 var redisServerInstance = new rServerModule(port);
 
-var countryList = null;
-
-var NodeGeocoder = require('node-geocoder');
-var timezone = require('node-google-timezone');
 
 var googleApiKey = "AIzaSyDpjghEzY_n8Uh8x3-w8Lx_ObRZPhxClic";
 
-timezone.key(googleApiKey);
+var countryList = null;
 
 var options = {
   provider: 'google',
@@ -75,28 +74,13 @@ function seedRedis(callback) {
 
         geocoder.geocode(searchStr)
           .then(function(res) {
+
             country.latitude = res[0].latitude;
             country.longitude = res[0].longitude;
-            timezone.data(
-              country.latitude,
-              country.longitude,
-              0,
-              function (err, tz) {
-                if (err) {
-                  console.log(err);
-                  return;
-                }
-                var tzObj = tz.raw_response
-                country.utc = tzObj.rawOffset;
-                country.timeOffset = tzObj.dstOffset;
-                rClient.set(redisKey, JSON.stringify(country));
 
-                if (++count == countryList.length) {
-                  callback();
-                }
-
-            });
-
+            if (++count == countryList.length) {
+              callback();
+            }
           })
           .catch(function(err) {
             console.log(err);
@@ -107,9 +91,10 @@ function seedRedis(callback) {
 }
 
 async.series([
-  readCountryCsvFile,
-  seedRedis
+    readCountryCsvFile,
+    seedRedis
   ],
   function(err, results){
-    process.exit();
-});
+    console.log("REDIS Seeding is a success!");
+    //process.exit();
+  });
