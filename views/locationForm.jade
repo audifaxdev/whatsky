@@ -1,0 +1,66 @@
+div#location-form.modal.fade
+  div.modal-dialog
+    div.modal-content
+      div.modal-header
+        button.close(type="button" data-dismiss="modal" aria-label="Close")
+          span(aria-hidden="true") &times;
+        h4.modal-title Edition
+      div.modal-body
+        form
+          input#idInput(type="hidden" name="id")
+          div.form-group
+            label(for="capital") Capital
+            input#capitalInput.form-control(type="text" name="capital")
+          div.form-group
+            label(for="country") Country
+            input#countryInput.form-control(type="text" name="country")
+          div.form-group
+              label(for="timezone") Time-Zone
+              input#tzInput.form-control(type="text" readonly="true" name="timezone")
+          div.form-group
+            label(for="localtime") Local Time
+            input#localTimeInput.form-control(type="text" readonly="true" name="localtime")
+          div.form-group
+            label(for="weather-data") Weather data
+            pre#weatherData
+
+      div.modal-footer
+        button.btn.btn-default(type="button" data-dismiss="modal") Close
+        button.btn.btn-primary(onclick="locationForm.locationSubmit()" type="button" data-dismiss="modal") Save Changes
+
+script(type="text/javascript").
+  var locationForm = {
+    newLocation: function () {
+      $("#idInput").val('');
+      $("#capitalInput").val('');
+      $("#countryInput").val('');
+      $("#tzInput").val('');
+      $("#weatherData").html('');
+    },
+    loadLocation: function(obj) {
+      $("#idInput").val(obj.id);
+      $("#capitalInput").val(obj.capital);
+      $("#countryInput").val(obj.country);
+      $("#localTimeInput").val(obj.localtime);
+      $("#tzInput").val(obj.weather.timezone);
+      $("#weatherData").html(JSON.stringify(obj.weather, null, 4));
+    },
+    locationSubmit: function () {
+      var newObj = {
+        id: $("#idInput").val(),
+        capital: $("#capitalInput").val(),
+        country: $("#countryInput").val()
+      };
+      console.log(window.location + '/locations');
+
+      var splitUrl = window.location.href.split("/");
+      var url = splitUrl[0] + "//" + splitUrl[2];
+
+      $.ajax({
+        type: 'POST',
+        url: url + '/locations',
+        contentType: "application/json; charset=utf-8",
+        data: JSON.stringify(newObj)
+      });
+    }
+  };

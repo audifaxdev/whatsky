@@ -16,7 +16,7 @@ var forecast = new Forecast({
 
 var redisDb = 7;
 
-function updateWeatherInfo() {
+function updateWeatherInfo(callback) {
   console.log("CRON JOB : Update weather info");
 
   var rClient = rClientModule.createClient({"db": redisDb});
@@ -24,6 +24,8 @@ function updateWeatherInfo() {
   rClient.on('connect', function() {
 
     rClient.keys("whatsky:country:*", function (err, replies) {
+
+      var count = 0;
       replies.forEach(function (redisCountryKey) {
 
         rClient.get(redisCountryKey, function(err, reply) {
@@ -35,7 +37,6 @@ function updateWeatherInfo() {
           } catch (e) {
             return console.warn(["Problem while parsing stringified country", e]);
           }
-          console.log();
           forecast.get(
             [country.latitude, country.longitude],
             function(err, weather) {
@@ -44,7 +45,14 @@ function updateWeatherInfo() {
               }
               country.weather = weather;
               rClient.set(redisCountryKey, JSON.stringify(country));
+              if (++count == replies.length) {
+                if (callback) {
+                  console.log("CRON JOB : Update weather info : Success");
+                  callback();
 
+
+                }
+              }
             });
         });
       });

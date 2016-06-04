@@ -2,32 +2,69 @@ extends layout
 
 block content
 
-  div.modal.fade
-    div.modal-dialog
-      div.modal-content
-        div.modal-header
-          h4.modal-title Edition
+  include ./locationForm.jade
 
   h4.text-center Welcome to #{title}
-  p
+
   table.table.table-striped.table-hover
+    tr: button.btn.btn-primary.btn-block(onClick="newLocationClicked()") Add locations
     tr
       td: h5 Location
       td: h5 Weather
-      td: Local Time
+      td: h5 Local Time
       td
       td
-    each val in JSON.parse(countries)
+    - var data = JSON.parse(countries)
+    each val in data
       tr
         td=val.capital + ", " + val.country
         td=val.weather.daily.summary
         td=val.localtime
         td
-          button.btn.btn-primary Edit
+          button.btn.btn-primary(onClick="editLocationClicked(" + val.id + ")") Edit
         td
-          button.btn.btn-danger Delete
+          button.btn.btn-danger(onClick="deleteLocationClicked(" + val.id + ")") Delete
     script(type='text/javascript').
-      if (window) {
-        alert("Hello from jade");
+      var lCountries = !{JSON.stringify(data)};
+
+      function getCountryObject(id) {
+        for(var i = 0; i < lCountries.length; ++i) {
+          if (lCountries[i].id === id) {
+            return lCountries[i];
+          }
+        }
+        return null;
       }
+
+      function newLocationClicked() {
+        locationForm.newLocation();
+        $("#location-form").modal();
+      }
+
+      function editLocationClicked(id) {
+        if (!id) {
+          return;
+        }
+        var countryObj = getCountryObject(id);
+        if (!countryObj) {
+          return;
+        }
+        locationForm.loadLocation(countryObj);
+        $("#location-form").modal();
+      }
+
+      var splitUrl = window.location.href.split("/");
+      var url = splitUrl[0] + "//" + splitUrl[2];
+
+      function deleteLocationClicked(id) {
+        if (!id) {
+          return;
+        }
+        $.ajax({
+          type: 'DELETE',
+          url: url + '/locations/' + id
+        });
+      }
+
+
 

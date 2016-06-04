@@ -2,11 +2,37 @@ var express = require('express');
 var rClientModule = require('redis');
 var rConfig = require("../config/redis.json");
 var moment = require("moment-timezone");
+var locationModel = require("../modules/location-model.js");
 
 var router = express.Router();
 
-/* GET home page. */
-router.get('/', function(req, res, next) {
+router.delete("/locations/:location_id", function (req, res, next) {
+  locationModel.clearKey(req.params.location_id, function (err) {
+    if (err) {
+      console.log(err);
+      res.sendStatus(403);
+    } else {
+      res.sendStatus(204);
+    }
+    res.end();
+  });
+});
+
+router.post('/locations', function (req, res, next) {
+  console.log("router.post('/locations')");
+  console.log(req.body);
+
+  locationModel.upsert(req.body, function (err) {
+    if (err) {
+      res.sendStatus(403);
+    } else {
+      res.sendStatus(201)
+    }
+    res.end();
+  });
+});
+
+router.get('/', function (req, res, next) {
   var rClient = rClientModule.createClient({"db": rConfig.redisDb});
 
   var countries = [];
@@ -31,8 +57,13 @@ router.get('/', function(req, res, next) {
           throw new Error(e);
         }
 
-        country.localtime =
-          moment.tz(now, country.weather.timezone).format("YYYY-MM-DD HH:mm:ss");
+        if (country.weather) {
+          country.localtime =
+            moment.tz(now, country.weather.timezone).format("YYYY-MM-DD HH:mm:ss");
+        } else {
+          country.localtime = null;
+          country.weather = {daily: {summary: null }};
+        }
 
         countries.push(country);
 
