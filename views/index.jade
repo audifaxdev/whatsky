@@ -1,14 +1,33 @@
 extends layout
 
 block content
+
+  div.modal.fade
+    div.modal-dialog
+      div.modal-content
+        div.modal-header
+          h4.modal-title Edition
+
   h4.text-center Welcome to #{title}
   p
   table.table.table-striped.table-hover
     tr
       td: h5 Location
       td: h5 Weather
+      td: Local Time
+      td
+      td
     each val in JSON.parse(countries)
       tr
         td=val.capital + ", " + val.country
         td=val.weather.daily.summary
+        td=val.localtime
+        td
+          button.btn.btn-primary Edit
+        td
+          button.btn.btn-danger Delete
+    script(type='text/javascript').
+      if (window) {
+        alert("Hello from jade");
+      }
 

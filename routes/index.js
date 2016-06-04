@@ -1,9 +1,9 @@
 var express = require('express');
-var router = express.Router();
-
 var rClientModule = require('redis');
 var rConfig = require("../config/redis.json");
+var moment = require("moment-timezone");
 
+var router = express.Router();
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -13,6 +13,7 @@ router.get('/', function(req, res, next) {
   rClient.keys("whatsky:country:*", function (err, replies) {
 
     var count = 0;
+    var now = new Date();
 
     replies.forEach(function (redisKey) {
 
@@ -29,6 +30,9 @@ router.get('/', function(req, res, next) {
           //todo return http err
           throw new Error(e);
         }
+
+        country.localtime =
+          moment.tz(now, country.weather.timezone).format("YYYY-MM-DD HH:mm:ss");
 
         countries.push(country);
 
