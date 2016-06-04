@@ -1,4 +1,3 @@
-var cron = require('node-cron');
 var rClientModule = require('redis');
 var Forecast = require('forecast');
 
@@ -18,6 +17,8 @@ var forecast = new Forecast({
 var redisDb = 7;
 
 function updateWeatherInfo() {
+  console.log("CRON JOB : Update weather info");
+
   var rClient = rClientModule.createClient({"db": redisDb});
 
   rClient.on('connect', function() {
@@ -27,19 +28,19 @@ function updateWeatherInfo() {
 
         rClient.get(redisCountryKey, function(err, reply) {
           if (err) {
-            return console.log(err);
+            return console.warn(["Problem while getting stored country", err]);
           }
           try {
             var country = JSON.parse(reply);
           } catch (e) {
-            return console.log(e);
+            return console.warn(["Problem while parsing stringified country", e]);
           }
-
+          console.log();
           forecast.get(
             [country.latitude, country.longitude],
             function(err, weather) {
               if(err) {
-                return console.dir(err);
+                return console.warn(["Could not get forecast", err]);
               }
               country.weather = weather;
               rClient.set(redisCountryKey, JSON.stringify(country));
@@ -51,4 +52,4 @@ function updateWeatherInfo() {
   });
 }
 
-module.exports = router;
+module.exports = updateWeatherInfo;

@@ -1,8 +1,8 @@
 //#!/usr/bin/env node
 
+var rServer = require("./../modules/redis-server.js");
+var rClientModule = require("./../modules/redis-client.js");
 
-var rServerModule = require('redis-server');
-var rClientModule = require('redis');
 
 var async =require("async");
 var fs = require("fs");
@@ -11,23 +11,15 @@ var CSVConverter = require("csvtojson").Converter;
 
 var NodeGeocoder = require('node-geocoder');
 
-var redisDb = 7;
-var port = 6379;
-
-var redisServerInstance = new rServerModule(port);
-
-
 var googleApiKey = "AIzaSyDpjghEzY_n8Uh8x3-w8Lx_ObRZPhxClic";
 
 var countryList = null;
 
 var options = {
   provider: 'google',
-
-  // Optionnal depending of the providers
-  httpAdapter: 'https', // Default
-  apiKey: googleApiKey, // for Mapquest, OpenCage, Google Premier
-  formatter: null         // 'gpx', 'string', ...
+  httpAdapter: 'https',
+  apiKey: googleApiKey,
+  formatter: null
 };
 
 var geocoder = NodeGeocoder(options);
@@ -47,54 +39,56 @@ function readCountryCsvFile(callback) {
   });
   csvConverter.fromString(data,function(err, countries){
     if (err) {
-      console.log(err)
+      throw new Error(err);
     }
   });
 }
 
+
 function seedRedis(callback) {
 
-  redisServerInstance.open(function (error) {
+  //console.log("The redis server is now up and running on port "+port);
+  var rClient = rClientModule.getClient();
 
-    if (error) {
-      throw new Error(error);
-    }
+  rClient.on('error', function(err) {
+    throw new Error(err);
+  });
 
-    //console.log("The redis server is now up and running on port "+port);
+  rClient.on('connect', function() {
 
-    var rClient = rClientModule.createClient({"db": redisDb});
+    var count = 0;
+    countryList.forEach(function (country, index) {
+      var redisKey = "whatsky:country:" + index;
+      var searchStr = country.capital + ", " + country.country;
 
-    rClient.on('connect', function() {
-      //console.log('The redis client is connected');
+      geocoder.geocode(searchStr)
+        .then(function(res) {
 
-      var count = 0;
-      countryList.forEach(function (country, index) {
-        var redisKey = "whatsky:country:" + index;
-        var searchStr = country.capital + ", " + country.country;
+          country.latitude = res[0].latitude;
+          country.longitude = res[0].longitude;
 
-        geocoder.geocode(searchStr)
-          .then(function(res) {
+          console.log(country);
+          rClient.set(redisKey, JSON.stringify(country));
 
-            country.latitude = res[0].latitude;
-            country.longitude = res[0].longitude;
-
-            if (++count == countryList.length) {
-              callback();
-            }
-          })
-          .catch(function(err) {
-            console.log(err);
-          });
-      });
+          if (++count == countryList.length) {
+            callback();
+          }
+        })
+        .catch(function(err) {
+          console.log(err);
+          throw new Error(err);
+        });
     });
   });
+
 }
 
 async.series([
     readCountryCsvFile,
+    rServer.start,
     seedRedis
   ],
   function(err, results){
     console.log("REDIS Seeding is a success!");
-    //process.exit();
+    process.exit();
   });

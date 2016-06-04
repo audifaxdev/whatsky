@@ -1,5 +1,14 @@
 extends layout
 
 block content
-  h1= title
-  p Welcome to #{title}
+  h4.text-center Welcome to #{title}
+  p
+  table.table.table-striped.table-hover
+    tr
+      td: h5 Location
+      td: h5 Weather
+    each val in JSON.parse(countries)
+      tr
+        td=val.capital + ", " + val.country
+        td=val.weather.daily.summary
+
