@@ -21,9 +21,9 @@ block content
         td=val.weather.daily.summary
         td=val.localtime
         td
-          button.btn.btn-primary(onClick="editLocationClicked(" + val.id + ")") Edit
+          button.btn.btn-primary(onClick="editLocationClicked('" + val.id + "')") Edit
         td
-          button.btn.btn-danger(onClick="deleteLocationClicked(" + val.id + ")") Delete
+          button.btn.btn-danger(onClick="deleteLocationClicked('" + val.id + "')") Delete
     script(type='text/javascript').
       var lCountries = !{JSON.stringify(data)};
 
@@ -63,6 +63,8 @@ block content
         $.ajax({
           type: 'DELETE',
           url: url + '/locations/' + id
+        }).done(function () {
+          window.location.reload();
         });
       }
 

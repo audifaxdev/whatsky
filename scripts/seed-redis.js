@@ -1,10 +1,10 @@
 //#!/usr/bin/env node
 
 var rServer = require("./../modules/redis-server.js");
-var rClientModule = require("./../modules/redis-client.js");
+var rClientService = require("./../modules/redis-client.js");
 
 var weatherCron = require("./../modules/weather-cron.js");
-var geoCodeCountry = require("./../modules/geocode-country.js");
+var locationModel = require("./../modules/location-model.js");
 
 var async =require("async");
 var fs = require("fs");
@@ -36,7 +36,8 @@ function readCountryCsvFile(callback) {
 function seedRedis(callback) {
 
   //console.log("The redis server is now up and running on port "+port);
-  var rClient = rClientModule.getClient();
+
+  var rClient = rClientService.getClient();
 
   rClient.on('error', function(err) {
     throw new Error(err);
@@ -45,22 +46,18 @@ function seedRedis(callback) {
   rClient.on('connect', function() {
 
     var count = 0;
-    var lastIndex = null;
-    countryList.forEach(function (country, index) {
 
-      var redisKey = "whatsky:country:" + index;
-      country.id = index;
-      geoCodeCountry(country, index, function (resultCountry) {
+    countryList.forEach(function (country) {
 
-        rClient.set(redisKey, JSON.stringify(resultCountry));
+      locationModel.upsert(country, function () {
 
         if (++count === countryList.length) {
-          rClient.set("whatsky:country_next_index", index+1);
           if (callback) {
             callback();
           }
         }
       });
+
     });
   });
 

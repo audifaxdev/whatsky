@@ -9,7 +9,7 @@ div#location-form.modal.fade
         form
           input#idInput(type="hidden" name="id")
           div.form-group
-            label(for="capital") Capital
+            label(for="capital") City
             input#capitalInput.form-control(type="text" name="capital")
           div.form-group
             label(for="country") Country
@@ -61,6 +61,8 @@ script(type="text/javascript").
         url: url + '/locations',
         contentType: "application/json; charset=utf-8",
         data: JSON.stringify(newObj)
-      });
+      }).done(function () {
+        window.location.reload();
+      });;
     }
   };

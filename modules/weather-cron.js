@@ -1,4 +1,4 @@
-var rClientModule = require('redis');
+var rClientService = require('../modules/redis-client.js');
 var Forecast = require('forecast');
 
 var forecastApiKey = "fecb1cd2c6cd2d818bd68e2a58bb7930";
@@ -19,7 +19,7 @@ var redisDb = 7;
 function updateWeatherInfo(callback) {
   console.log("CRON JOB : Update weather info");
 
-  var rClient = rClientModule.createClient({"db": redisDb});
+  var rClient = rClientService.getClient();
 
   rClient.on('connect', function() {
 
