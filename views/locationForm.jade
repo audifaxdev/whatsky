@@ -43,7 +43,9 @@ script(type="text/javascript").
       $("#countryInput").val(obj.country);
       $("#localTimeInput").val(obj.localtime);
       $("#tzInput").val(obj.weather.timezone);
-      $("#weatherData").html(JSON.stringify(obj.weather, null, 4));
+
+      $("#weatherData").JSONView(obj.weather, {collapsed: true});
+      //$("#weatherData").html(JSON.stringify(obj.weather, null, 2));
     },
     locationSubmit: function () {
       var newObj = {

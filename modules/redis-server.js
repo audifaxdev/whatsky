@@ -1,7 +1,7 @@
 "use strict";
 
-var path = require("path");
-var rConfig = require("../config/redis.json");
+var path = require('path');
+var rConfig = require('../config/redis.json');
 
 var childProcess = require('child_process')
   , keyRE = /(port:\s+\d+)|(pid:\s+\d+)|(already\s+in\s+use)|(not\s+listen)|error|denied/ig

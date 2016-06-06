@@ -1,6 +1,6 @@
 var NodeGeocoder = require('node-geocoder');
 
-var googleApiKey = "AIzaSyDpjghEzY_n8Uh8x3-w8Lx_ObRZPhxClic";
+var googleApiKey = 'AIzaSyDpjghEzY_n8Uh8x3-w8Lx_ObRZPhxClic';
 
 var options = {
   provider: 'google',
@@ -13,7 +13,7 @@ var geocoder = NodeGeocoder(options);
 
 module.exports = function geoCodeCountry(country, index, callback) {
 
-  var searchStr = country.capital + ", " + country.country;
+  var searchStr = country.capital + ', ' + country.country;
 
   geocoder.geocode(searchStr)
     .then(function(res) {

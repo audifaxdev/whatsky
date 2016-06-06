@@ -1,8 +1,8 @@
 var uuid = require('node-uuid');
-var rClientService = require("../modules/redis-client.js");
+var rClientService = require('../modules/redis-client.js');
 
-var geoCodeCountry = require("../modules/geocode-country.js");
-var moment = require("moment-timezone");
+var geoCodeCountry = require('../modules/geocode-country.js');
+var moment = require('moment-timezone');
 
 
 module.exports = {
@@ -10,7 +10,7 @@ module.exports = {
   getAll: function (callback) {
     var rClient = rClientService.getClient();
 
-    rClient.keys("whatsky:country:*", function (err, replies) {
+    rClient.keys('whatsky:country:*', function (err, replies) {
 
       var countries = [];
       var count = 0;
@@ -34,7 +34,7 @@ module.exports = {
 
           if (country.weather) {
             country.localtime =
-              moment.tz(now, country.weather.timezone).format("YYYY-MM-DD HH:mm:ss");
+              moment.tz(now, country.weather.timezone).format('YYYY-MM-DD HH:mm:ss');
           } else {
             country.localtime = null;
             country.weather = {daily: {summary: null }};
@@ -54,7 +54,7 @@ module.exports = {
   upsert: function (countryObj, callback) {
 
     if ( !countryObj.capital.trim() && !countryObj.country.trim()) {
-      callback({message: "Missing capital and or country field"});
+      callback({message: 'Missing capital and or country field'});
       return;
     }
 
@@ -66,7 +66,7 @@ module.exports = {
 
     geoCodeCountry(countryObj, countryObj.id, function (resultCountry) {
 
-      var redisKey = "whatsky:country:" + countryObj.id;
+      var redisKey = 'whatsky:country:' + countryObj.id;
 
       rClient.set(redisKey, JSON.stringify(resultCountry));
 
@@ -79,6 +79,6 @@ module.exports = {
   clearKey: function(id, callback) {
     var rClient = rClientService.getClient();
 
-    rClient.del("whatsky:country:" + id, callback);
+    rClient.del('whatsky:country:' + id, callback);
   }
 };
